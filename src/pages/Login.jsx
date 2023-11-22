@@ -13,7 +13,7 @@ export const action =
     try {
       const response = await customFetch.post('/auth/local', data)
       store.dispatch(loginUser(response.data))
-      console.log(response.data)
+      // console.log(response.data)
 
       toast.success('Login succesfully')
       return redirect('/')

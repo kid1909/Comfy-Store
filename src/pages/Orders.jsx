@@ -7,11 +7,26 @@ import {
   SectionTitle,
 } from '../components'
 
+const ordersQuery = (params, user) => {
+  return {
+    queryKey: [
+      'orders',
+      user.username,
+      params.page ? parseInt(params.page) : 1,
+    ],
+    queryFn: () =>
+      customFetch.get('/orders', {
+        params,
+        headers: { Authorization: `Bearer ${user.token}` },
+      }),
+  }
+}
+
 export const loader =
-  (store) =>
+  (store, queryClient) =>
   async ({ request }) => {
     const user = store.getState().userState.user
-    console.log(user)
+
     if (!user) {
       toast.warn('You must login to view orders ')
       return redirect('/login')
@@ -20,10 +35,9 @@ export const loader =
       ...new URL(request.url).searchParams.entries(),
     ])
     try {
-      const response = await customFetch.get('/orders', {
-        params,
-        headers: { Authorization: `Bearer ${user.token}` },
-      })
+      const response = await queryClient.ensureQueryData(
+        ordersQuery(params, user)
+      )
 
       return { orders: response.data.data, meta: response.data.meta }
     } catch (error) {
